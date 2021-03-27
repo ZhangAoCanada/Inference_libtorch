@@ -15,6 +15,10 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 file(GLOB source_files 
 	${SOURCE_DIRECTORY}/nanodet.cpp
 	${SOURCE_DIRECTORY}/nanodet.h
+	${SOURCE_DIRECTORY}/draw.cpp
+	${SOURCE_DIRECTORY}/draw.h
+	${SOURCE_DIRECTORY}/timer.cpp
+	${SOURCE_DIRECTORY}/timer.h
 	${SOURCE_DIRECTORY}/main.cpp
 	)
 

@@ -4,7 +4,7 @@
 #define NANODET_H
 
 #include <iostream>
-#include <memory>
+//#include <memory>
 #include <vector>
 #include <algorithm>
 #include <string>
@@ -18,6 +18,7 @@ struct BoxInfo
 {
 	int x_min, y_min, x_max, y_max;
 	std::string class_name;
+	int class_ind;
 	float score;
 };
 
@@ -54,6 +55,8 @@ public:
 	~Nanodetlibtorch() = default;
 
 	cv::Mat getResizedImage() const { return _image; };
+	int getClassSize() const { return _all_classes.size(); }
+
 	void toInputSize(const cv::Mat& image);
 	void preprocess(const cv::Mat& image);
 	void decodeClass(BoxInfo& box, torch::Tensor& raw_class);
@@ -63,8 +66,9 @@ public:
 	void decode(std::vector<BoxInfo>& boxes, 
 				const std::vector<torch::Tensor>& class_pred, 
 				const std::vector<torch::Tensor>& box_pred, 
-				float score_threshold);
-	void nms(std::vector<BoxInfo>& boxes);
+				float score_threshold = 0.5f);
+	float iou(const BoxInfo& box_a, const BoxInfo& box_b);
+	std::vector<BoxInfo> nms(std::vector<BoxInfo>& boxes, float iou_threshold = 0.5f);
 	std::vector<BoxInfo> run(const cv::Mat& image);
 
 }; // class Nanodetlibtorch

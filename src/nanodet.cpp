@@ -62,6 +62,7 @@ void Nanodetlibtorch::decodeClass(BoxInfo& box, torch::Tensor& raw_class)
 	int index = raw_class.argmax().item<int>();
 	box.score = score;
 	box.class_name = _all_classes[index];
+	box.class_ind = index;
 }
 
 
@@ -87,6 +88,11 @@ void Nanodetlibtorch::decodeBox(BoxInfo& box, torch::Tensor& raw_box,
 	box.y_min = std::max(grid_center_y - box_decoded[1], 0.0f);
 	box.x_max = std::min(grid_center_x + box_decoded[2], (float)INPUT_SHAPE);
 	box.y_max = std::min(grid_center_y + box_decoded[3], (float)INPUT_SHAPE);
+
+	box.x_min = (box.x_min - _pad_h/2) / _scale;
+	box.x_max = (box.x_max - _pad_h/2) / _scale;
+	box.y_min = (box.y_min - _pad_w/2) / _scale;
+	box.y_max = (box.y_max - _pad_w/2) / _scale;
 }
 
 
@@ -94,7 +100,7 @@ void Nanodetlibtorch::decode(
 		std::vector<BoxInfo>& boxes, 
 		const std::vector<torch::Tensor>& class_preds, 
 		const std::vector<torch::Tensor>& box_preds, 
-		float score_threshold = 0.5f)
+		float score_threshold)
 {
 	// typical hierarchical feature stages
 	for (int i = 0; i < (int)class_preds.size(); i++) {
@@ -117,8 +123,51 @@ void Nanodetlibtorch::decode(
 }
 
 
-void nms(std::vector<BoxInfo>& boxes)
+float Nanodetlibtorch::iou(const BoxInfo& box_a, const BoxInfo& box_b)
 {
+	float iou_value;
+	float intersection_xmin, intersection_xmax, intersection_ymin, intersection_ymax, 
+		  w, h, intersection_area, box_a_area, box_b_area;
+
+	intersection_xmin = std::max(box_a.x_min, box_b.x_min);
+	intersection_ymin = std::max(box_a.y_min, box_b.y_min);
+	intersection_xmax = std::min(box_a.x_max, box_b.x_max);
+	intersection_ymax = std::min(box_a.y_max, box_b.y_max);
+
+	w = std::max(0.0f, intersection_xmax - intersection_xmin + 1);	
+	h = std::max(0.0f, intersection_ymax - intersection_ymin + 1);	
+
+	box_a_area = (box_a.x_max - box_a.x_min) * (box_a.y_max - box_a.y_min);
+	box_b_area = (box_b.x_max - box_b.x_min) * (box_b.y_max - box_b.y_min);
+	intersection_area = w * h;
+	iou_value = intersection_area / (box_a_area + box_b_area - intersection_area);
+	return iou_value;
+}
+
+
+std::vector<BoxInfo> Nanodetlibtorch::nms(std::vector<BoxInfo>& boxes, float iou_threshold)
+{
+	std::sort(boxes.begin(), boxes.end(), 
+			[](BoxInfo& box_a, BoxInfo& box_b) { 
+			return box_a.score > box_b.score;
+			});
+
+	BoxInfo target_box;
+	std::vector<BoxInfo> boxes_nms;
+
+	while (boxes.size() != 0) {
+		target_box = boxes[0];
+		boxes.erase(boxes.begin());
+		boxes_nms.push_back(target_box);
+		if (boxes.size() > 0) {
+			for (auto it = boxes.begin(); it != boxes.end(); ) {
+				float box_iou = iou(target_box, *it);
+				box_iou > iou_threshold ? boxes.erase(it) : ++it;
+				}
+		}
+	}
+
+	return boxes_nms;
 }
 
 
@@ -132,5 +181,6 @@ std::vector<BoxInfo> Nanodetlibtorch::run(const cv::Mat& image)
 
 	std::vector<BoxInfo> boxes;
 	decode(boxes, class_preds, box_preds, 0.5f);
+	boxes = nms(boxes, 0.5f);
 	return boxes;
 }

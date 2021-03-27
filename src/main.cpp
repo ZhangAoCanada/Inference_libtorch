@@ -4,6 +4,8 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include "nanodet.h"
+#include "draw.h"
+#include "timer.h"
 
 int main(int argc, const char* argv[]) 
 {
@@ -12,22 +14,25 @@ int main(int argc, const char* argv[])
 	}
 
 	Nanodetlibtorch model(argv[1]);
-
-	cv::Mat image_test = cv::imread("/mnt/f/test_data/test.jpg");
-	std::vector<BoxInfo> boxes = model.run(image_test);
-	std::cout << boxes.size() << std::endl;
-	for (auto& box : boxes)
-		std::cout << box.class_name << std::endl;
+	int num_classes = model.getClassSize();
+	Draw drawer(num_classes);
 	
-	/*cv::VideoCapture video(argv[2]);*/
-	//cv::Mat frame;
-	//while (video.isOpened()) {
-		//video >> frame;
-		//model.preprocess(frame);
-		////frame = model.getResizedImage();
-		//cv::imshow("img", frame);
-		//if (cv::waitKey(10) == 27) break;
-	/*}*/
+	cv::VideoCapture video(argv[2]);
+	cv::Mat frame;
+	while (video.isOpened()) {
+		Timer timer;
+		video >> frame;
+		cv::resize(frame, frame, cv::Size(), 0.3f, 0.3f);
+		model.preprocess(frame);
+		//frame = model.getResizedImage();
+		std::vector<BoxInfo> boxes = model.run(frame);
+		for (auto& box : boxes) {
+			drawer.drawBox(frame, box.x_min, box.x_max, box.y_min, box.y_max, box.class_ind);
+			drawer.drawText(frame, box.class_name, box.x_min, box.x_max, box.y_min, box.y_max, box.class_ind);
+		}
+		cv::imshow("img", frame);
+		if (cv::waitKey(10) == 27) break;
+	}
 
 	return 0;
 }
