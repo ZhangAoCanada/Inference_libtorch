@@ -108,9 +108,11 @@ if __name__ == "__main__":
     video = cv2.VideoCapture("/mnt/f/test_data/song.webm")
     # video = cv2.VideoCapture("/mnt/f/test_data/kitti_seq0.avi")
 
+    all_time_durations = []
     while (video.isOpened()):
         start_time = time.time()
         ret, frame = video.read()
+        if frame is None: break
         frame = cv2.resize(frame, None, fx=0.3, fy=0.3)
         scale, pad, input_tensor = preprocess(frame)
         results = model(input_tensor)
@@ -134,8 +136,10 @@ if __name__ == "__main__":
                                         (box[0]+text_size[0], box[1]-1), color, -1)
                     cv2.putText(frame, cls, (box[0]+3, box[1]-4), cv2.FONT_HERSHEY_SIMPLEX, 0.4, \
                                     (255, 255, 255)) #, 1, cv2.LINE_AA, False)
-        end_time = time.time()
-        print("Time duration: ", end_time - start_time, "s")
-
         cv2.imshow("img", frame)
         if cv2.waitKey(10) == 27: break
+        end_time = time.time()
+        print("Time duration: ", end_time - start_time, "s")
+        all_time_durations.append(end_time - start_time)
+    print("Average time duration: ", np.mean(all_time_durations), "s")
+

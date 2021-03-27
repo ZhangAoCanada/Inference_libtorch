@@ -1,11 +1,15 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <numeric>
 // non-standard libaries
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include "nanodet.h"
 #include "draw.h"
 #include "timer.h"
+
+double Timer::time_duration = 0.0f;
 
 int main(int argc, const char* argv[]) 
 {
@@ -19,9 +23,14 @@ int main(int argc, const char* argv[])
 	
 	cv::VideoCapture video(argv[2]);
 	cv::Mat frame;
+	double time_sum = 0.0f;
+	int count = 0;
 	while (video.isOpened()) {
 		Timer timer;
+		time_sum += timer.time_duration;
+		count++;
 		video >> frame;
+		if (frame.empty()) break;
 		cv::resize(frame, frame, cv::Size(), 0.3f, 0.3f);
 		model.preprocess(frame);
 		//frame = model.getResizedImage();
@@ -33,6 +42,10 @@ int main(int argc, const char* argv[])
 		cv::imshow("img", frame);
 		if (cv::waitKey(10) == 27) break;
 	}
+
+	double average_time = time_sum / count;
+	std::cout << "Average time duration: " << average_time << " s\n";
+
 
 	return 0;
 }
