@@ -20,11 +20,13 @@ pytorch:	1.8.0+cpu
 | Library            | Inference Time (s)           |
 | ------------------ |:----------------------------:|
 | libtorch(C++)      | 0.175677                     |
+| ncnn(C++)          | **0.058979**                     |
 | pytorch(Python)    | 0.216339                     |
 
 *NOTE*: The inference time contains everything, including networks forwarding,  prediction decoding and instance drawing.
 
+*ALSO NOTE*: ncnn is highly optimized for CPU (specially ARM) and GPU (vulkan); libtorch is optimized for GPU (cuda). Further tests need to be done in order to test the performance of these libraries on GPU (cuda).
+
 ## TODO
 
-* Add OpenMP (C++) to see if it could go faster.
-* Add ncnn (C++) for comparison
+Add OpenMP (C++) to see if it could go faster.
