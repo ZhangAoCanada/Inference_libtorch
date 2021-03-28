@@ -32,8 +32,6 @@ int main(int argc, const char* argv[])
 		video >> frame;
 		if (frame.empty()) break;
 		cv::resize(frame, frame, cv::Size(), 0.3f, 0.3f);
-		model.preprocess(frame);
-		//frame = model.getResizedImage();
 		std::vector<BoxInfo> boxes = model.run(frame);
 		for (auto& box : boxes) {
 			drawer.drawBox(frame, box.x_min, box.x_max, box.y_min, box.y_max, box.class_ind);

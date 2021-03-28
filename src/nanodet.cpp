@@ -173,6 +173,7 @@ std::vector<BoxInfo> Nanodetlibtorch::nms(std::vector<BoxInfo>& boxes, float iou
 
 std::vector<BoxInfo> Nanodetlibtorch::run(const cv::Mat& image)
 {
+	torch::NoGradGuard no_grad;
 	preprocess(image);
 	auto outputs = _module.forward({_input_tensor}).toTuple();
 

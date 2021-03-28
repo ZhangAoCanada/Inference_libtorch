@@ -19,9 +19,9 @@ pytorch:	1.8.0+cpu
 
 | Library            | Inference Time (s)           |
 | ------------------ |:----------------------------:|
-| libtorch(C++)      | 0.175677                     |
-| ncnn(C++)          | **0.058979**                     |
-| pytorch(Python)    | 0.216339                     |
+| libtorch (C++)     | 0.121933                     |
+| ncnn (C++)         | **0.058979**                 |
+| pytorch (Python)   | 0.198009          |
 
 *NOTE*: The inference time contains everything, including networks forwarding,  prediction decoding and instance drawing.
 
