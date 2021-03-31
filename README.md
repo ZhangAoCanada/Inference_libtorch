@@ -19,7 +19,7 @@ pytorch:	1.8.0+cpu
 
 | Library            | Inference Time (s)           |
 | ------------------ |:----------------------------:|
-| libtorch (C++)     | 0.121933                     |
+| libtorch (C++)     | 0.106165                     |
 | ncnn (C++)         | **0.058979**                 |
 | pytorch (Python)   | 0.198009          |
 
