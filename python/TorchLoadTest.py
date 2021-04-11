@@ -104,7 +104,10 @@ def decodeInfo(results, score_threshold = 0.5):
 
 if __name__ == "__main__":
     colors = randomColor()
-    model = torch.load("./nanodet-m.pth")
+    ### NOTE: this requires nanodet setup ###
+    # model = torch.load("./nanodet-m.pth")
+    ### NOTE: this can be directly loaded, but slower ###
+    model = torch.jit.load("./nanodet_jit_module.pt")
     video = cv2.VideoCapture("/mnt/f/test_data/song.webm")
     # video = cv2.VideoCapture("/mnt/f/test_data/kitti_seq0.avi")
 
@@ -128,6 +131,7 @@ if __name__ == "__main__":
                     box /= scale
                     box[:2] -= pad
                     box[2:4] -= pad
+                    box = box.numpy().astype(np.int)
                     ##### NOTE: draw box #####
                     cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), color, 1)
                     ##### NOTE: draw text #####

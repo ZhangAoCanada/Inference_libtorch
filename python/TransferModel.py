@@ -28,7 +28,7 @@ def preprocess(frame):
 
 
 if __name__ == "__main__":
-    colors = randomColor()
+    # colors = randomColor()
     model = torch.load("./nanodet-m.pth")
 
     frame = cv2.imread("/mnt/f/test_data/test.jpg")
